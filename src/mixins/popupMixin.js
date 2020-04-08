@@ -12,7 +12,7 @@ import {
   isElement,
   addClass
 } from '../utils/domUtils'
-import {isString} from '../utils/objectUtils'
+import {isString, isFunction} from '../utils/objectUtils'
 
 const SHOW_CLASS = 'in'
 
@@ -42,6 +42,14 @@ export default {
       type: Number,
       default: 150
     },
+    hideDelay: {
+      type: Number,
+      default: 0
+    },
+    showDelay: {
+      type: Number,
+      default: 0
+    },
     enable: {
       type: Boolean,
       default: true
@@ -50,12 +58,17 @@ export default {
       type: Boolean,
       default: true
     },
-    target: null
+    target: null,
+    viewport: null,
+    customClass: String
   },
   data () {
     return {
       triggerEl: null,
-      timeoutId: 0
+      hideTimeoutId: 0,
+      showTimeoutId: 0,
+      transitionTimeoutId: 0,
+      autoTimeoutId: 0
     }
   },
   watch: {
@@ -162,11 +175,32 @@ export default {
         off(this.triggerEl, EVENTS.BLUR, this.handleAuto)
       }
       off(window, EVENTS.CLICK, this.windowClicked)
+      this.clearTimeouts()
+    },
+    clearTimeouts () {
+      if (this.hideTimeoutId) {
+        clearTimeout(this.hideTimeoutId)
+        this.hideTimeoutId = 0
+      }
+      if (this.showTimeoutId) {
+        clearTimeout(this.showTimeoutId)
+        this.showTimeoutId = 0
+      }
+      if (this.transitionTimeoutId) {
+        clearTimeout(this.transitionTimeoutId)
+        this.transitionTimeoutId = 0
+      }
+      if (this.autoTimeoutId) {
+        clearTimeout(this.autoTimeoutId)
+        this.autoTimeoutId = 0
+      }
     },
     resetPosition () {
       const popup = this.$refs.popup
-      setTooltipPosition(popup, this.triggerEl, this.placement, this.autoPlacement, this.appendTo)
-      popup.offsetHeight
+      if (popup) {
+        setTooltipPosition(popup, this.triggerEl, this.placement, this.autoPlacement, this.appendTo, this.viewport)
+        popup.offsetHeight
+      }
     },
     hideOnLeave () {
       if (this.trigger === TRIGGERS.HOVER || (this.trigger === TRIGGERS.HOVER_FOCUS && !this.triggerEl.matches(':focus'))) {
@@ -182,28 +216,49 @@ export default {
     },
     show () {
       if (this.enable && this.triggerEl && this.isNotEmpty() && !this.isShown()) {
-        let popup = this.$refs.popup
-        if (this.timeoutId > 0) {
-          clearTimeout(this.timeoutId)
-          this.timeoutId = 0
-        } else {
-          popup.className = `${this.name} ${this.placement} fade`
-          let container = document.querySelector(this.appendTo)
-          container.appendChild(popup)
-          this.resetPosition()
+        const popUpAppendedContainer = this.hideTimeoutId > 0 // weird condition
+        if (popUpAppendedContainer) {
+          clearTimeout(this.hideTimeoutId)
+          this.hideTimeoutId = 0
         }
-        addClass(popup, SHOW_CLASS)
-        this.$emit('input', true)
-        this.$emit('show')
+        if (this.transitionTimeoutId > 0) {
+          clearTimeout(this.transitionTimeoutId)
+          this.transitionTimeoutId = 0
+        }
+        clearTimeout(this.showTimeoutId)
+        this.showTimeoutId = setTimeout(() => {
+          this.showTimeoutId = 0
+          const popup = this.$refs.popup
+          if (popup) {
+            // add to dom
+            if (!popUpAppendedContainer) {
+              popup.className = `${this.name} ${this.placement} ${this.customClass ? this.customClass : ''} fade`
+              let container = document.querySelector(this.appendTo)
+              container.appendChild(popup)
+              this.resetPosition()
+            }
+            addClass(popup, SHOW_CLASS)
+            this.$emit('input', true)
+            this.$emit('show')
+          }
+        }, this.showDelay)
       }
     },
     hide () {
+      if (this.showTimeoutId > 0) {
+        clearTimeout(this.showTimeoutId)
+        this.showTimeoutId = 0
+      }
+
       if (!this.isShown()) {
         return
       }
       if (this.enterable && (this.trigger === TRIGGERS.HOVER || this.trigger === TRIGGERS.HOVER_FOCUS)) {
-        setTimeout(() => {
-          if (!this.$refs.popup.matches(':hover')) {
+        clearTimeout(this.hideTimeoutId)
+        this.hideTimeoutId = setTimeout(() => {
+          this.hideTimeoutId = 0
+          const popup = this.$refs.popup
+          if (popup && !popup.matches(':hover')) {
             this.$hide()
           }
         }, 100)
@@ -213,28 +268,34 @@ export default {
     },
     $hide () {
       if (this.isShown()) {
-        clearTimeout(this.timeoutId)
-        removeClass(this.$refs.popup, SHOW_CLASS)
-        this.timeoutId = setTimeout(() => {
-          removeFromDom(this.$refs.popup)
-          this.timeoutId = 0
-          this.$emit('input', false)
-          this.$emit('hide')
-        }, this.transitionDuration)
+        clearTimeout(this.hideTimeoutId)
+        this.hideTimeoutId = setTimeout(() => {
+          this.hideTimeoutId = 0
+          removeClass(this.$refs.popup, SHOW_CLASS)
+          // gives fade out time
+          this.transitionTimeoutId = setTimeout(() => {
+            this.transitionTimeoutId = 0
+            removeFromDom(this.$refs.popup)
+            this.$emit('input', false)
+            this.$emit('hide')
+          }, this.transitionDuration)
+        }, this.hideDelay)
       }
     },
     isShown () {
       return hasClass(this.$refs.popup, SHOW_CLASS)
     },
     windowClicked (event) {
-      if (this.triggerEl && !this.triggerEl.contains(event.target) &&
-        this.trigger === TRIGGERS.OUTSIDE_CLICK && !this.$refs.popup.contains(event.target) &&
+      if (this.triggerEl && isFunction(this.triggerEl.contains) && !this.triggerEl.contains(event.target) &&
+        this.trigger === TRIGGERS.OUTSIDE_CLICK && !(this.$refs.popup && this.$refs.popup.contains(event.target)) &&
         this.isShown()) {
         this.hide()
       }
     },
     handleAuto () {
-      setTimeout(() => {
+      clearTimeout(this.autoTimeoutId)
+      this.autoTimeoutId = setTimeout(() => {
+        this.autoTimeoutId = 0
         if (this.triggerEl.matches(':hover, :focus')) {
           this.show()
         } else {

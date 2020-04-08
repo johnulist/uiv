@@ -2,6 +2,13 @@
 
 > A lightweight & configurable time picker.
 
+<ins class="adsbygoogle"
+     style="display:block; text-align:center;"
+     data-ad-layout="in-article"
+     data-ad-format="fluid"
+     data-ad-client="ca-pub-4714899946256166"
+     data-ad-slot="4603582855"></ins>
+
 ## Example
 
 To change the time input, you can:
@@ -159,6 +166,25 @@ All input methods are all disabled in readonly mode.
 <!-- time-picker-no-controls-example.vue -->
 ```
 
+## With custom input width
+
+```html
+<template>
+  <time-picker v-model="time" :input-width="inputWidth"/>
+</template>
+<script>
+  export default {
+    data () {
+      return {
+        time: new Date(''),
+        inputWidth: 180
+      }
+    }
+  }
+</script>
+<!-- time-picker-input-width-example.vue -->
+```
+
 ## Empty fields
 
 ```html
@@ -189,9 +215,10 @@ Name                | Type       | Default                          | Required |
 `show-meridian`     | Boolean    | true                             |          | Use 12H or 24H mode.
 `hour-step`         | Number     | 1                                |          | Hours to increase or decrease when using a button.
 `min-step`          | Number     | 1                                |          | Minutes to increase or decrease when using a button.
-`readonly`          | Boolean    | false                            |          | 
+`readonly`          | Boolean    | false                            |          |
 `max`               | Date       |                                  |          | The maximum time that user can select or input.
 `min`               | Date       |                                  |          | The minimum time that user can select or input.
 `icon-control-up`   | String     | glyphicon glyphicon-chevron-up   |          | The arrow icon shown inside the `increase` button.
 `icon-control-down` | String     | glyphicon glyphicon-chevron-down |          | The arrow icon shown inside the `decrease` button.
 `controls`          | Boolean    | true                             |          | Hide the up/down `controls` if set to `false`.
+`input-width`       | Number     | 50                               |          | (0.34+) The width in pixels of the `hours` and `minutes` inputs.

@@ -4,6 +4,13 @@
 
 By design MessageBox provides simulations of browsers' `alert`, `confirm` and `prompt`. Use Modal instead if needed more complicated contents.
 
+<ins class="adsbygoogle"
+     style="display:block; text-align:center;"
+     data-ad-layout="in-article"
+     data-ad-format="fluid"
+     data-ad-client="ca-pub-4714899946256166"
+     data-ad-slot="4603582855"></ins>
+
 ## Alert
 
 Displays an alert modal with the optional specified content and an OK (auto-focused) button. By default it can not be closed on backdrop click.
@@ -159,3 +166,6 @@ Name             | Type       | Default  | Required | Description
 `customClass`    |            |          |          | Custom classes to modal, anything that can work with `v-bind:class` or `:class`.
 `backdrop`       | Boolean    | `false` if type is alert, otherwise `true` |          | Dismiss the modal by backdrop click.
 `validator`      | Function   |          |          | Custom validator function for prompt. Accepts the input value as param, returns the err msg (not valid) or null (valid)
+`defaultValue`   | String     |          |          | (0.27.0+) The default value to fill in prompt box.
+`inputType`      | String     | text     |          | (0.28.0+) The default input type of prompt box.
+`autoFocus`     | String     | ok       |          | (0.31.0+) Focus on button while message box open. Can be `ok` / `cancel`, or empty String to disable the feature.

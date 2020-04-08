@@ -1,5 +1,5 @@
 <template>
-  <div tabindex="-1" role="dialog" class="modal" :class="{fade:transitionDuration>0}" @click.self="backdropClicked">
+  <div tabindex="-1" role="dialog" class="modal" :class="{fade:transitionDuration>0}" @mousedown.self="backdropClicked">
     <div ref="dialog" class="modal-dialog" :class="modalSizeClass" role="document">
       <div class="modal-content">
         <div class="modal-header" v-if="header">
@@ -51,11 +51,12 @@
     removeClass,
     getComputedStyle
   } from '../../utils/domUtils'
-  import {isFunction} from '../../utils/objectUtils'
+  import { isFunction, isPromiseSupported } from '../../utils/objectUtils'
 
   const MODAL_BACKDROP = 'modal-backdrop'
   const IN = 'in'
-  const getOpenModalNum = () => document.querySelectorAll(`.${MODAL_BACKDROP}`).length
+  const getOpenModals = () => document.querySelectorAll(`.${MODAL_BACKDROP}`)
+  const getOpenModalNum = () => getOpenModals().length
 
   export default {
     mixins: [Local],
@@ -113,6 +114,10 @@
       appendToBody: {
         type: Boolean,
         default: false
+      },
+      displayStyle: {
+        type: String,
+        default: 'block'
       }
     },
     data () {
@@ -152,16 +157,51 @@
     methods: {
       onKeyPress (event) {
         if (this.keyboard && this.value && event.keyCode === 27) {
+          const thisModal = this.$refs.backdrop
+          let thisZIndex = thisModal.style.zIndex
+          thisZIndex = thisZIndex && thisZIndex !== 'auto' ? parseInt(thisZIndex) : 0
+          // Find out if this modal is the top most one.
+          const modals = getOpenModals()
+          const modalsLength = modals.length
+          for (let i = 0; i < modalsLength; i++) {
+            if (modals[i] !== thisModal) {
+              let zIndex = modals[i].style.zIndex
+              zIndex = zIndex && zIndex !== 'auto' ? parseInt(zIndex) : 0
+              // if any existing modal has higher zIndex, ignore
+              if (zIndex > thisZIndex) {
+                return
+              }
+            }
+          }
           this.toggle(false)
         }
       },
       toggle (show, msg) {
-        // skip the hiding while show===false & beforeClose returning falsely value
-        if (!show && isFunction(this.beforeClose) && !this.beforeClose(msg)) {
-          return
+        let shouldClose = true
+        if (isFunction(this.beforeClose)) {
+          shouldClose = this.beforeClose(msg)
         }
-        this.msg = msg
-        this.$emit('input', show)
+
+        if (isPromiseSupported()) {
+          // Skip the hiding when beforeClose returning falsely value or returned Promise resolves to falsely value
+          // Use Promise.resolve to accept both Boolean values and Promises
+          Promise.resolve(shouldClose).then((shouldClose) => {
+            // Skip the hiding while show===false
+            if (!show && shouldClose) {
+              this.msg = msg
+              this.$emit('input', show)
+            }
+          })
+        } else {
+          // Fallback to old version if promise is not supported
+          // skip the hiding while show===false & beforeClose returning falsely value
+          if (!show && !shouldClose) {
+            return
+          }
+
+          this.msg = msg
+          this.$emit('input', show)
+        }
       },
       $toggle (show) {
         const modal = this.$el
@@ -173,7 +213,7 @@
           if (this.appendToBody) {
             document.body.appendChild(modal)
           }
-          modal.style.display = 'block'
+          modal.style.display = this.displayStyle
           modal.scrollTop = 0
           backdrop.offsetHeight // force repaint
           toggleBodyOverflow(false)

@@ -1,5 +1,5 @@
 <template>
-  <div :style="pickerStyle" data-role="date-picker" @click="onPickerClick">
+  <div :class="pickerClass" :style="pickerStyle" data-role="date-picker" @click="onPickerClick">
     <date-view
       v-show="view==='d'"
       :month="currentMonth"
@@ -148,6 +148,14 @@
           width: this.width + 'px'
         }
       },
+      pickerClass () {
+        return {
+          'uiv-datepicker': true,
+          'uiv-datepicker-date': this.view === 'd',
+          'uiv-datepicker-month': this.view === 'm',
+          'uiv-datepicker-year': this.view === 'y'
+        }
+      },
       limit () {
         let limit = {}
         if (this.limitFrom) {
@@ -209,7 +217,11 @@
       onDateChange (date) {
         if (date && isNumber(date.date) && isNumber(date.month) && isNumber(date.year)) {
           let _date = new Date(date.year, date.month, date.date)
-          this.$emit('input', stringify(_date, this.format))
+          this.$emit('input', this.format ? stringify(_date, this.format) : _date)
+          // if the input event trigger nothing (same value)
+          // manually correct
+          this.currentMonth = date.month
+          this.currentYear = date.year
         } else {
           this.$emit('input', '')
         }

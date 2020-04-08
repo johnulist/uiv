@@ -2,6 +2,13 @@
 
 > Displays a global notification message at a corner of the page.
 
+<ins class="adsbygoogle"
+     style="display:block; text-align:center;"
+     data-ad-layout="in-article"
+     data-ad-format="fluid"
+     data-ad-client="ca-pub-4714899946256166"
+     data-ad-slot="4603582855"></ins>
+
 ## Example
 
 Click on the button below to show a notification. By default, it is dismissible with a close button, and will dismiss automatically after 5000ms (both are configurable).
@@ -43,9 +50,10 @@ Click on the button below to show a notification. By default, it is dismissible 
 
 ## Types
 
-There're 4 optional types of notification: `info` / `success` / `warning` / `danger`.
+There're 4 optional types of notification: `info` / `success` / `warning` / `danger` (also alias as `error`). Except `type` option, you can also use registered shortcut methods (0.33.0+, see examples below).
 
 Notification with specific type will has a default icon on the left, you can also change or remove the icon by `icon` option.
+
 
 ```html
 <template>
@@ -74,15 +82,13 @@ Notification with specific type will has a default icon on the left, you can als
         })
       },
       warning () {
-        this.$notify({
-          type: 'warning',
-          title: 'Warning!',
-          content: 'Better check yourself, you\'re not looking too good.'
-        })
+        // simple warning with content only
+        this.$notify.warning('Better check yourself, you\'re not looking too good.')
       },
       danger () {
-        this.$notify({
-          type: 'danger',
+        // error msg with title and content (other options available too)
+        // `error` is an alias of `danger` (both of them works)
+        this.$notify.error({
           title: 'Oh snap!',
           content: 'Change a few things up and try submitting again.'
         })
@@ -200,3 +206,13 @@ Name           | Type       | Default   | Required | Description
 `offset`       | Number     | 15        |          | The space in px between notifications.
 `offsetX`      | Number     | 15        |          | The horizontal offset in px while displaying notification.
 `offsetY`      | Number     | 15        |          | The vertical offset in px while displaying notification.
+
+### Methods
+
+You can call a method by `$notify` or `Notification`, for example `this.$notify.dismissAll()`.
+
+Name                                                | Params           | Description
+--------------------------------------------------- | ----------       | -----------------------
+`dismissAll`                                        |                  | Dismiss all notifications.
+`info` / `success` / `warning` / `danger` (`error`) | String or Object | Display a corresponding notification.
+

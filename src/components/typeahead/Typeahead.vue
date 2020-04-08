@@ -265,6 +265,7 @@
         }
       },
       inputKeyPressed (event) {
+        event.stopPropagation()
         if (this.open) {
           switch (event.keyCode) {
             case 13:
@@ -273,6 +274,7 @@
               } else {
                 this.open = false
               }
+              event.preventDefault()
               break
             case 27:
               this.open = false

@@ -2,6 +2,13 @@
 
 > A lightweight & configurable date picker.
 
+<ins class="adsbygoogle"
+     style="display:block; text-align:center;"
+     data-ad-layout="in-article"
+     data-ad-format="fluid"
+     data-ad-client="ca-pub-4714899946256166"
+     data-ad-slot="4603582855"></ins>
+
 ## Example
 
 Use `v-model` to bind the selected date.
@@ -181,7 +188,8 @@ Change the starting day of the week. Support 0 (Sunday) ~ 6 (Saturday).
 
 Use `date-class` to apply custom classes to each date button, which should be an function that:
 
-* takes the date of button as param.
+* takes the date of button as the first param.
+* (0.33.0+) also with current month and year showing of the picker in the second param.
 * returns the class(es).
 
 See below example for detail usage, which has all sunday highlighted:
@@ -257,7 +265,7 @@ Name                   | Type       | Default                           | Requir
 `width`                | Number     | 270                               |          | The date-picker's width in px.
 `today-btn`            | Boolean    | true                              |          | Show / hide the today button.
 `clear-btn`            | Boolean    | true                              |          | Show / hide the clear button.
-`format`               | String     | yyyy-MM-dd                        |          | The date format.
+`format`               | String     | yyyy-MM-dd                        |          | The date format, will emit Date object if provided as empty string.
 `close-on-selected`    | Boolean    | true                              |          | Close the date-picker dropdown after date selected.
 `limit-from`           |            |                                   |          | Anything that can convert to a valid Date object. E.g. `2017-01-01` or `new Date()`.
 `limit-to`             |            |                                   |          | Same as `limit-from`.
@@ -269,4 +277,4 @@ Name                   | Type       | Default                           | Requir
 `year-month-formatter` | Function   |                                   |          | The formatter function of year month label string on top of date view, with 2 params `year` and `month` (0-based), with the formatted string returned.
 `icon-control-left`    | String     | glyphicon glyphicon-chevron-left  |          | The arrow icon shown inside the `previous` button.
 `icon-control-right`   | String     | glyphicon glyphicon-chevron-right |          | The arrow icon shown inside the `next` button.
-`locale`               | Object     |                                   |          | The locale used for translating month and weekday names, clear-btn and today-btn texts.
+`locale`               | Object     |                                   |          | (0.24.0+) The locale used for translating month and weekday names, clear-btn and today-btn texts.
